@@ -9,52 +9,81 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00ffcc; --bg: #020205; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08); --red: #ff4d4d; --green: #00ffaa; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+    :root { --neon: #00ffcc; --bg: #020205; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); --red: #ff4d4d; --green: #00ffaa; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- LANDING --- */
-        #landing-page {
-            position: fixed; inset: 0; z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle at center, #0a2020 0%, #020205 100%);
-            text-align: center;
-        }
-        .hero-title { font-family: 'Orbitron'; font-size: 3.5rem; color: var(--neon); letter-spacing: 5px; }
-        .launch-btn {
-            margin-top: 2rem; padding: 16px 45px; background: transparent; border: 1px solid var(--neon);
-            color: var(--neon); font-family: 'Orbitron'; cursor: pointer; border-radius: 4px;
-            transition: 0.4s; text-transform: uppercase;
-        }
-        .launch-btn:hover { background: var(--neon); color: black; box-shadow: 0 0 30px rgba(0,255,204,0.4); }
+    /* --- LANDING --- */
+    #landing-page {
+        position: fixed; inset: 0; z-index: 100;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: radial-gradient(circle at center, #0a2020 0%, #020205 100%);
+        text-align: center; padding: 20px;
+    }
+    .hero-title { font-family: 'Orbitron'; font-size: clamp(2rem, 8vw, 3.5rem); color: var(--neon); letter-spacing: 5px; }
+    .launch-btn {
+        margin-top: 2rem; padding: 16px 45px; background: transparent; border: 1px solid var(--neon);
+        color: var(--neon); font-family: 'Orbitron'; cursor: pointer; border-radius: 4px;
+        transition: 0.4s; text-transform: uppercase; width: 100%; max-width: 300px;
+    }
 
-        /* --- DASHBOARD --- */
-        #canvas-container { position: fixed; inset: 0; z-index: 1; opacity: 0; pointer-events: none; }
+    /* --- DASHBOARD LAYOUT --- */
+    #canvas-container { position: fixed; inset: 0; z-index: 1; opacity: 0; pointer-events: none; }
+    
+    .dashboard {
+        position: relative; z-index: 10; display: none; opacity: 0;
+        height: 100vh; padding: 10px; gap: 10px;
+        /* Mobile Default: Stacked */
+        display: flex; flex-direction: column;
+        overflow-y: auto; 
+    }
+
+    /* Tablet & Desktop: Grid */
+    @media (min-width: 1024px) {
         .dashboard {
-            position: relative; z-index: 10; display: none; opacity: 0;
+            display: grid;
             grid-template-columns: 280px 1fr 300px;
             grid-template-rows: 60px 1fr 100px;
-            height: 100vh; gap: 10px; padding: 10px; pointer-events: none;
+            overflow: hidden;
         }
-        .panel { background: var(--glass); backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 8px; padding: 15px; pointer-events: all; overflow: hidden; }
+    }
 
-        header { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-family: 'Orbitron'; color: var(--neon); font-size: 1.2rem; }
-        
-        .watchlist { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-        .stock-row { display: flex; justify-content: space-between; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.02); cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .stock-row:hover, .stock-row.active { border-color: var(--neon); background: rgba(0, 255, 204, 0.08); }
-        .stock-name { font-size: 0.8rem; font-weight: 600; }
-        .stock-val { font-family: 'Orbitron'; font-size: 0.75rem; }
+    .panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 8px; padding: 15px; pointer-events: all; }
 
-        .main-viz { grid-column: 2; display: flex; flex-direction: column; }
-        .chart-wrapper { position: relative; flex: 1; min-height: 0; margin-top: 15px; }
-        
-        footer { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
-        .dev-credit { color: #555; font-family: 'Orbitron'; font-size: 10px; letter-spacing: 1px; }
+    header { display: flex; align-items: center; justify-content: space-between; min-height: 60px; }
+    @media (min-width: 1024px) { header { grid-column: 1 / 4; } }
 
-        .up { color: var(--green); } .down { color: var(--red); }
-    </style>
+    /* Watchlist: Horizontal scroll on mobile, Vertical on desktop */
+    .watchlist { 
+        display: flex; flex-direction: row; gap: 10px; overflow-x: auto; white-space: nowrap; 
+        padding-bottom: 5px; -webkit-overflow-scrolling: touch;
+    }
+    @media (min-width: 1024px) {
+        .watchlist { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    }
+
+    .stock-row { 
+        display: flex; flex-direction: column; min-width: 140px; 
+        padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.03); 
+        cursor: pointer; border: 1px solid transparent; 
+    }
+    @media (min-width: 1024px) {
+        .stock-row { flex-direction: row; justify-content: space-between; min-width: unset; }
+    }
+    .stock-row.active { border-color: var(--neon); background: rgba(0, 255, 204, 0.1); }
+
+    .main-viz { flex: 1; display: flex; flex-direction: column; min-height: 350px; }
+    .chart-wrapper { position: relative; flex: 1; width: 100%; min-height: 200px; }
+    
+    footer { display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
+    @media (min-width: 768px) {
+        footer { flex-direction: row; justify-content: space-between; grid-column: 1 / 4; }
+    }
+
+    .up { color: var(--green); } .down { color: var(--red); }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+</style>
 </head>
 <body>
 
