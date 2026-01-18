@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSE Quantum | Dalal Street 2026</title>
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2422/2422796.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00ffcc; --bg: #020205; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08); --red: #ff4d4d; --green: #00ffaa; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+
+        /* --- LANDING --- */
+        #landing-page {
+            position: fixed; inset: 0; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #0a2020 0%, #020205 100%);
+            text-align: center;
+        }
+        .hero-title { font-family: 'Orbitron'; font-size: 3.5rem; color: var(--neon); letter-spacing: 5px; }
+        .launch-btn {
+            margin-top: 2rem; padding: 16px 45px; background: transparent; border: 1px solid var(--neon);
+            color: var(--neon); font-family: 'Orbitron'; cursor: pointer; border-radius: 4px;
+            transition: 0.4s; text-transform: uppercase;
+        }
+        .launch-btn:hover { background: var(--neon); color: black; box-shadow: 0 0 30px rgba(0,255,204,0.4); }
+
+        /* --- DASHBOARD --- */
+        #canvas-container { position: fixed; inset: 0; z-index: 1; opacity: 0; pointer-events: none; }
+        .dashboard {
+            position: relative; z-index: 10; display: none; opacity: 0;
+            grid-template-columns: 280px 1fr 300px;
+            grid-template-rows: 60px 1fr 100px;
+            height: 100vh; gap: 10px; padding: 10px; pointer-events: none;
+        }
+        .panel { background: var(--glass); backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 8px; padding: 15px; pointer-events: all; overflow: hidden; }
+
+        header { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-family: 'Orbitron'; color: var(--neon); font-size: 1.2rem; }
+        
+        .watchlist { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .stock-row { display: flex; justify-content: space-between; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.02); cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .stock-row:hover, .stock-row.active { border-color: var(--neon); background: rgba(0, 255, 204, 0.08); }
+        .stock-name { font-size: 0.8rem; font-weight: 600; }
+        .stock-val { font-family: 'Orbitron'; font-size: 0.75rem; }
+
+        .main-viz { grid-column: 2; display: flex; flex-direction: column; }
+        .chart-wrapper { position: relative; flex: 1; min-height: 0; margin-top: 15px; }
+        
+        footer { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+        .dev-credit { color: #555; font-family: 'Orbitron'; font-size: 10px; letter-spacing: 1px; }
+
+        .up { color: var(--green); } .down { color: var(--red); }
+    </style>
+</head>
+<body>
+
+    <div id="landing-page">
+        <h1 class="hero-title">BSE QUANTUM</h1>
+        <p style="color:#555; letter-spacing:3px;">MULTI-ASSET TERMINAL • JAN 18 2026</p>
+        <button class="launch-btn" onclick="launchApp()">Initialize Terminal</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="dashboard" id="dashboard">
+        <header class="panel">
+            <div class="logo">TERMINAL.BSE</div>
+            <div id="clock" style="font-family:'Orbitron';">16:15:00</div>
+            <div style="font-size: 11px; color:#555">MARKET: <span style="color:var(--red)">CLOSED</span></div>
+        </header>
+
+        <aside class="panel watchlist">
+            <h4 style="font-size: 10px; color:#555; margin-bottom:10px;">TOP SENSEX WEIGHTS</h4>
+            <div class="stock-row active" onclick="updateView('SENSEX', this)">
+                <span class="stock-name">SENSEX</span><span class="stock-val up" id="row-SENSEX">83,570.35</span>
+            </div>
+            <div class="stock-row" onclick="updateView('RELIANCE', this)">
+                <span class="stock-name">RELIANCE</span><span class="stock-val down" id="row-RELIANCE">1,457.60</span>
+            </div>
+            <div class="stock-row" onclick="updateView('HDFCBANK', this)">
+                <span class="stock-name">HDFC BANK</span><span class="stock-val up" id="row-HDFCBANK">931.20</span>
+            </div>
+            <div class="stock-row" onclick="updateView('BHARTIARTL', this)">
+                <span class="stock-name">BHARTI AIRTEL</span><span class="stock-val down" id="row-BHARTIARTL">2,016.00</span>
+            </div>
+            <div class="stock-row" onclick="updateView('TCS', this)">
+                <span class="stock-name">TCS</span><span class="stock-val up" id="row-TCS">3,206.70</span>
+            </div>
+            <div class="stock-row" onclick="updateView('ICICIBANK', this)">
+                <span class="stock-name">ICICI BANK</span><span class="stock-val down" id="row-ICICIBANK">1,411.70</span>
+            </div>
+            <div class="stock-row" onclick="updateView('INFY', this)">
+                <span class="stock-name">INFOSYS</span><span class="stock-val up" id="row-INFY">1,689.40</span>
+            </div>
+            <div class="stock-row" onclick="updateView('LT', this)">
+                <span class="stock-name">L&T</span><span class="stock-val down" id="row-LT">3,855.90</span>
+            </div>
+        </aside>
+
+        <main class="panel main-viz">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                    <h2 id="active-title" style="font-family:'Orbitron'; font-size: 1.4rem;">S&P BSE SENSEX</h2>
+                    <p id="active-desc" style="font-size: 0.75rem; color:#666;">Market Benchmark</p>
+                </div>
+                <div style="text-align: right;">
+                    <h1 id="active-price" class="up" style="font-family:'Orbitron'; font-size: 2.2rem;">83,570.35</h1>
+                    <span id="active-change" class="up" style="font-size: 0.8rem;">+187.64 (0.23%)</span>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <h4 style="font-size: 10px; color:#555; margin-bottom:10px;">MARKET DEPTH</h4>
+            <div style="font-size: 11px; line-height:1.6;">
+                <p><span style="color:var(--neon)">SENSEX PE:</span> 23.15</p>
+                <p><span style="color:var(--neon)">MKT CAP:</span> ₹468.21 Trillion</p>
+                <p><span style="color:var(--neon)">VIX Index:</span> 12.45</p>
+                <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
+                <p style="color:#888;">FIIs continue cautious stance; Q3 results for Reliance expected tomorrow.</p>
+            </div>
+        </aside>
+
+        <footer class="panel">
+            <div style="display:flex; gap:15px; color:#666;">
+                <div>USD/INR: <span style="color:white">90.69</span></div>
+                <div>GOLD: <span style="color:white">₹74,450</span></div>
+            </div>
+            <div class="dev-credit">Designed & Developed by Harshad Jadhav</div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let chart;
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        let currentSymbol = 'SENSEX';
+
+        // BSE Live Data: Closing Jan 16, 2026
+        const marketData = {
+            'SENSEX': { title: 'S&P BSE SENSEX', desc: 'Market Benchmark', price: 83570.35, chg: '+187.64 (0.23%)', trend: 'up', history: [83382, 84071, 83654, 83570] },
+            'RELIANCE': { title: 'RELIANCE INDUSTRIES', desc: 'Refineries & Retail', price: 1457.60, chg: '-30.41 (2.05%)', trend: 'down', history: [1485, 1475, 1460, 1457.6] },
+            'HDFCBANK': { title: 'HDFC BANK', desc: 'Banking - Private', price: 931.20, chg: '+5.10 (0.55%)', trend: 'up', history: [920, 925, 930, 931.2] },
+            'BHARTIARTL': { title: 'BHARTI AIRTEL', desc: 'Telecommunication', price: 2016.00, chg: '-17.10 (0.84%)', trend: 'down', history: [2040, 2030, 2025, 2016.0] },
+            'TCS': { title: 'TATA CONSULTANCY', desc: 'IT Software', price: 3206.70, chg: '+28.40 (0.88%)', trend: 'up', history: [3150, 3180, 3195, 3206.7] },
+            'ICICIBANK': { title: 'ICICI BANK', desc: 'Banking - Private', price: 1411.70, chg: '-7.60 (0.54%)', trend: 'down', history: [1430, 1425, 1420, 1411.7] },
+            'INFY': { title: 'INFOSYS LTD', desc: 'IT Software', price: 1689.40, chg: '+89.30 (5.58%)', trend: 'up', history: [1590, 1610, 1630, 1689.4] },
+            'LT': { title: 'LARSEN & TOUBRO', desc: 'Engineering & Construction', price: 3855.90, chg: '-132.00 (3.28%)', trend: 'down', history: [3980, 3950, 3900, 3855.9] }
+        };
+
+        function launchApp() {
+            const tl = gsap.timeline();
+            tl.to("#landing-page", { y: "-100%", duration: 1, ease: "expo.inOut" })
+              .to("#canvas-container", { opacity: 1, duration: 1 }, "-=0.5")
+              .set("#dashboard", { display: "grid" })
+              .to("#dashboard", { opacity: 1, duration: 0.5, onComplete: () => { initChart('SENSEX'); init3D(); startSim(); } });
+        }
+
+        function initChart(symbol) {
+            if(chart) chart.destroy();
+            const config = marketData[symbol];
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: config.history.map((_, i) => i + 1),
+                    datasets: [{
+                        data: [...config.history],
+                        borderColor: config.trend === 'up' ? '#00ffaa' : '#ff4d4d',
+                        borderWidth: 2,
+                        backgroundColor: config.trend === 'up' ? 'rgba(0, 255, 170, 0.05)' : 'rgba(255, 77, 77, 0.05)',
+                        fill: true, tension: 0, pointRadius: 4
+                    }]
+                },
+                options: { animation: false, responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { position: 'right', grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#444' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function updateView(sym, el) {
+            currentSymbol = sym;
+            document.querySelectorAll('.stock-row').forEach(r => r.classList.remove('active'));
+            el.classList.add('active');
+            const d = marketData[sym];
+            document.getElementById('active-title').innerText = d.title;
+            document.getElementById('active-desc').innerText = d.desc;
+            document.getElementById('active-price').innerText = d.price.toLocaleString('en-IN');
+            document.getElementById('active-change').innerText = d.chg;
+            document.getElementById('active-price').className = document.getElementById('active-change').className = d.trend;
+            initChart(sym);
+        }
+
+        function startSim() {
+            setInterval(() => {
+                const tick = (Math.random() - 0.5) * 1.5;
+                const d = marketData[currentSymbol];
+                const newPrice = (d.price + tick).toFixed(2);
+                document.getElementById('active-price').innerText = parseFloat(newPrice).toLocaleString('en-IN');
+                document.getElementById(`row-${currentSymbol}`).innerText = parseFloat(newPrice).toLocaleString('en-IN');
+                chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1] = parseFloat(newPrice);
+                chart.update('none');
+            }, 3000);
+        }
+
+        function init3D() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 1), new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true, transparent: true, opacity: 0.03 }));
+            scene.add(mesh);
+            camera.position.z = 5;
+            function anim() { requestAnimationFrame(anim); mesh.rotation.y += 0.001; renderer.render(scene, camera); }
+            anim();
+        }
+
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    </script>
+</body>
+</html>
